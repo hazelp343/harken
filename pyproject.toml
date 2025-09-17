@@ -64,3 +64,15 @@ version = { attr = "harken._version.__version__" }
 
 [tool.setuptools.package-data]
 harken = ["py.typed"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+src = ["harken", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

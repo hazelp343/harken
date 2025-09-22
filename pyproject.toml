@@ -88,3 +88,24 @@ files = ["harken"]
 [[tool.mypy.overrides]]
 module = ["soundfile", "librosa", "resampy", "transformers.*", "torchaudio.*"]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "slow: tests that download or run heavyweight pretrained models",
+]
+
+[tool.coverage.run]
+source = ["harken"]
+branch = true
+omit = ["harken/cli.py"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]

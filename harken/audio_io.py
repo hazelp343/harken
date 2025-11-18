@@ -39,6 +39,31 @@ def peak_normalize(signal: np.ndarray, peak: float = 1.0) -> np.ndarray:
     return (signal * (peak / max_abs)).astype(np.float32)
 
 
+def resample(signal: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
+    """Resample a mono signal from ``orig_sr`` to ``target_sr``.
+
+    Uses ``resampy`` when it is installed (band-limited, high quality) and
+    falls back to linear interpolation otherwise so the core stays usable with
+    no extra dependencies.
+    """
+    signal = np.asarray(signal, dtype=np.float32)
+    if orig_sr == target_sr or signal.size == 0:
+        return signal
+
+    try:
+        import resampy
+
+        return resampy.resample(signal, orig_sr, target_sr).astype(np.float32)
+    except ImportError:
+        duration = signal.shape[0] / float(orig_sr)
+        n_target = int(round(duration * target_sr))
+        if n_target <= 0:
+            return signal[:0]
+        src_idx = np.linspace(0.0, signal.shape[0] - 1, num=n_target)
+        xp = np.arange(signal.shape[0])
+        return np.interp(src_idx, xp, signal).astype(np.float32)
+
+
 def load_audio(
     path: str,
     sr: int = DEFAULT_SAMPLE_RATE,

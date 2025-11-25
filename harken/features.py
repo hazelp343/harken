@@ -16,7 +16,7 @@ from harken.constants import (
     DEFAULT_SAMPLE_RATE,
 )
 
-__all__ = ["hz_to_mel", "mel_to_hz", "mel_filterbank"]
+__all__ = ["hz_to_mel", "mel_to_hz", "mel_filterbank", "power_spectrogram"]
 
 
 def hz_to_mel(hz: np.ndarray | float) -> np.ndarray:
@@ -54,3 +54,28 @@ def mel_filterbank(
         falling = (right - fft_freqs) / max(right - center, 1e-9)
         fb[m - 1] = np.clip(np.minimum(rising, falling), 0.0, None)
     return fb
+
+
+def power_spectrogram(
+    signal: np.ndarray,
+    n_fft: int = DEFAULT_N_FFT,
+    hop_length: int = DEFAULT_HOP_LENGTH,
+) -> np.ndarray:
+    """Short-time Fourier power spectrogram, shape ``(n_fft // 2 + 1, frames)``.
+
+    A periodic Hann window is applied per frame; the signal is centre-padded so
+    the first frame is centred on sample zero (matching librosa's default).
+    """
+    signal = np.asarray(signal, dtype=np.float32)
+    pad = n_fft // 2
+    padded = np.pad(signal, pad, mode="reflect" if signal.size > pad else "constant")
+
+    n_frames = 1 + (len(padded) - n_fft) // hop_length
+    window = np.hanning(n_fft + 1)[:-1].astype(np.float32)
+
+    frames = np.stack(
+        [padded[i * hop_length : i * hop_length + n_fft] for i in range(n_frames)],
+        axis=0,
+    )
+    spectrum = np.fft.rfft(frames * window, n=n_fft, axis=1)
+    return (np.abs(spectrum) ** 2).T.astype(np.float32)

@@ -16,7 +16,13 @@ from harken.constants import (
     DEFAULT_SAMPLE_RATE,
 )
 
-__all__ = ["hz_to_mel", "mel_to_hz", "mel_filterbank", "power_spectrogram"]
+__all__ = [
+    "hz_to_mel",
+    "mel_to_hz",
+    "mel_filterbank",
+    "power_spectrogram",
+    "log_mel_spectrogram",
+]
 
 
 def hz_to_mel(hz: np.ndarray | float) -> np.ndarray:
@@ -79,3 +85,24 @@ def power_spectrogram(
     )
     spectrum = np.fft.rfft(frames * window, n=n_fft, axis=1)
     return (np.abs(spectrum) ** 2).T.astype(np.float32)
+
+
+def log_mel_spectrogram(
+    signal: np.ndarray,
+    sample_rate: int = DEFAULT_SAMPLE_RATE,
+    n_fft: int = DEFAULT_N_FFT,
+    hop_length: int = DEFAULT_HOP_LENGTH,
+    n_mels: int = DEFAULT_N_MELS,
+    fmin: float = 0.0,
+    fmax: float | None = None,
+    log_floor: float = 1e-10,
+) -> np.ndarray:
+    """Log-mel spectrogram of shape ``(n_mels, frames)``.
+
+    This is the default front end for encoders that consume mel features. The
+    output is natural-log magnitude, floored to avoid ``-inf`` on silence.
+    """
+    power = power_spectrogram(signal, n_fft=n_fft, hop_length=hop_length)
+    fb = mel_filterbank(sample_rate, n_fft=n_fft, n_mels=n_mels, fmin=fmin, fmax=fmax)
+    mel = fb @ power
+    return np.log(np.maximum(mel, log_floor)).astype(np.float32)

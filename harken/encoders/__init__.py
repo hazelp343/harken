@@ -20,9 +20,23 @@ def list_encoders() -> list[str]:
     return audio_encoders.keys()
 
 
+def get_encoder(name: str, **kwargs: object) -> AudioEncoder:
+    """Instantiate a registered encoder by name.
+
+    Extra keyword arguments are forwarded to the encoder constructor.
+    """
+    cls = audio_encoders.get(name)
+    return cls(**kwargs)  # type: ignore[arg-type]
+
+
+# Importing the built-in encoders registers them as a side effect.
+from harken.encoders import dummy as _dummy  # noqa: E402,F401
+
+
 __all__ = [
     "AudioEncoder",
     "audio_encoders",
     "register_encoder",
     "list_encoders",
+    "get_encoder",
 ]

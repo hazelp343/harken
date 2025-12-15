@@ -71,3 +71,38 @@ class MLPProjector(Projector):
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         return self._pool_time(self.net(frames), self.num_tokens)
+
+
+@projectors.register("stack")
+class StackProjector(Projector):
+    """Concatenate consecutive frames (temporal stacking) before projecting.
+
+    Reducing the time resolution by ``stack_factor`` is a cheap way to compress
+    long audio, following the Gazelle speech-LM design.
+    """
+
+    def __init__(
+        self,
+        in_dim: int,
+        out_dim: int,
+        num_tokens: int = 8,
+        stack_factor: int = 4,
+    ) -> None:
+        super().__init__(in_dim, out_dim, num_tokens)
+        self.stack_factor = stack_factor
+        self.net = nn.Sequential(
+            nn.Linear(in_dim * stack_factor, out_dim),
+            nn.GELU(),
+            nn.Linear(out_dim, out_dim),
+        )
+
+    def _stack(self, frames: torch.Tensor) -> torch.Tensor:
+        b, t, d = frames.shape
+        sf = self.stack_factor
+        pad = (sf - t % sf) % sf
+        if pad:
+            frames = F.pad(frames, (0, 0, 0, pad))
+        return frames.reshape(b, frames.shape[1] // sf, d * sf)
+
+    def forward(self, frames: torch.Tensor) -> torch.Tensor:
+        return self._pool_time(self.net(self._stack(frames)), self.num_tokens)

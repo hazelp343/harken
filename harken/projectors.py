@@ -106,3 +106,42 @@ class StackProjector(Projector):
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         return self._pool_time(self.net(self._stack(frames)), self.num_tokens)
+
+
+@projectors.register("query")
+class QueryProjector(Projector):
+    """Learned query tokens cross-attend to frames (a lightweight Q-Former).
+
+    Produces exactly ``num_tokens`` outputs regardless of input length, which is
+    convenient for very long or variable-length audio.
+    """
+
+    def __init__(
+        self,
+        in_dim: int,
+        out_dim: int,
+        num_tokens: int = 8,
+        num_heads: int = 8,
+    ) -> None:
+        super().__init__(in_dim, out_dim, num_tokens)
+        heads = num_heads
+        while out_dim % heads != 0 and heads > 1:
+            heads //= 2
+
+        self.in_proj = nn.Linear(in_dim, out_dim)
+        self.queries = nn.Parameter(torch.randn(num_tokens, out_dim) * 0.02)
+        self.attn = nn.MultiheadAttention(out_dim, heads, batch_first=True)
+        self.norm1 = nn.LayerNorm(out_dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(out_dim, out_dim * 4),
+            nn.GELU(),
+            nn.Linear(out_dim * 4, out_dim),
+        )
+        self.norm2 = nn.LayerNorm(out_dim)
+
+    def forward(self, frames: torch.Tensor) -> torch.Tensor:
+        kv = self.in_proj(frames)
+        q = self.queries.unsqueeze(0).expand(frames.shape[0], -1, -1)
+        attended, _ = self.attn(q, kv, kv)
+        x = self.norm1(q + attended)
+        return self.norm2(x + self.ffn(x))

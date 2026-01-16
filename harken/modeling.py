@@ -61,3 +61,30 @@ class AudioQAModel(nn.Module):
             if k:
                 merged[i, positions[:k]] = audio_embeds[i, :k].to(merged.dtype)
         return merged
+
+    def _prepare_inputs_embeds(
+        self,
+        input_ids: torch.Tensor,
+        audio_values: torch.Tensor | None,
+    ) -> torch.Tensor:
+        inputs_embeds = self.language_model.get_input_embeddings()(input_ids)
+        if audio_values is not None:
+            audio_embeds = self.encode_audio(audio_values)
+            inputs_embeds = self._merge_audio_embeddings(
+                input_ids, inputs_embeds, audio_embeds
+            )
+        return inputs_embeds
+
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        audio_values: torch.Tensor | None = None,
+        attention_mask: torch.Tensor | None = None,
+        labels: torch.Tensor | None = None,
+    ):
+        inputs_embeds = self._prepare_inputs_embeds(input_ids, audio_values)
+        return self.language_model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask,
+            labels=labels,
+        )

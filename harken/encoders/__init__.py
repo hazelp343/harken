@@ -29,8 +29,12 @@ def get_encoder(name: str, **kwargs: object) -> AudioEncoder:
     return cls(**kwargs)  # type: ignore[arg-type]
 
 
-# Importing the built-in encoders registers them as a side effect.
+# Importing the built-in encoders registers them as a side effect. The HF-backed
+# encoders import lazily, so this stays cheap even without transformers installed.
+from harken.encoders import ast as _ast  # noqa: E402,F401
+from harken.encoders import clap as _clap  # noqa: E402,F401
 from harken.encoders import dummy as _dummy  # noqa: E402,F401
+from harken.encoders import whisper as _whisper  # noqa: E402,F401
 
 
 __all__ = [

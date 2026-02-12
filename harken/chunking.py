@@ -4,6 +4,8 @@ receptive field.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 __all__ = ["frame_signal", "num_frames"]
@@ -31,7 +33,7 @@ def frame_signal(
     signal = np.asarray(signal, dtype=np.float32)
     if frame_length <= 0:
         raise ValueError("frame_length must be positive")
-    hop = hop_length or frame_length
+    hop = frame_length if hop_length is None else hop_length
     if hop <= 0:
         raise ValueError("hop_length must be positive")
 
@@ -42,10 +44,14 @@ def frame_signal(
         out[0, : signal.shape[0]] = signal
         return out
 
-    n = num_frames(signal.shape[0], frame_length, hop)
-    needed = (n - 1) * hop + frame_length
-    if pad and needed > signal.shape[0]:
-        signal = np.pad(signal, (0, needed - signal.shape[0]))
+    if pad:
+        # Round up so trailing samples are kept (zero-padding the last frame).
+        n = math.ceil((signal.shape[0] - frame_length) / hop) + 1
+        needed = (n - 1) * hop + frame_length
+        if needed > signal.shape[0]:
+            signal = np.pad(signal, (0, needed - signal.shape[0]))
+    else:
+        n = num_frames(signal.shape[0], frame_length, hop)
 
     return np.stack(
         [signal[i * hop : i * hop + frame_length] for i in range(n)], axis=0

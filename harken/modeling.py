@@ -5,6 +5,8 @@ in wherever the prompt carries an audio token.
 
 from __future__ import annotations
 
+from typing import Any
+
 import torch
 from torch import nn
 
@@ -26,7 +28,9 @@ class AudioQAModel(nn.Module):
         super().__init__()
         self.encoder = encoder
         self.projector = projector
-        self.language_model = language_model
+        # Typed loosely: any HF causal LM (or the built-in tiny LM) that exposes
+        # get_input_embeddings / forward(inputs_embeds=...) / generate.
+        self.language_model: Any = language_model
         self.config = config
         self.audio_token_id = audio_token_id
 

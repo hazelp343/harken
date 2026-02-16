@@ -9,6 +9,7 @@ model.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Protocol
 
 import numpy as np
 import torch
@@ -16,10 +17,20 @@ import torch
 from harken.prompts import AUDIO_TOKEN
 
 
+class TokenizerLike(Protocol):
+    """The minimal tokenizer interface the processor relies on."""
+
+    audio_token_id: int
+    pad_token_id: int
+
+    def encode(self, text: str) -> list[int]: ...
+    def decode(self, ids: Sequence[int]) -> str: ...
+
+
 class AudioQAProcessor:
     def __init__(
         self,
-        tokenizer: object,
+        tokenizer: TokenizerLike,
         num_audio_tokens: int,
         *,
         audio_token: str = AUDIO_TOKEN,
@@ -43,7 +54,7 @@ class AudioQAProcessor:
         audio: np.ndarray | Sequence[np.ndarray] | None = None,
     ) -> dict[str, torch.Tensor]:
         single = isinstance(text, str)
-        texts = [text] if single else list(text)
+        texts: list[str] = [text] if isinstance(text, str) else list(text)
         encoded = [self._encode(t) for t in texts]
 
         max_len = max(len(e) for e in encoded)

@@ -19,8 +19,11 @@ def aggregate(predictions: Sequence[str], references: Sequence[str]) -> dict:
     n = len(predictions)
     if n == 0:
         return {"exact_match": 0.0, "token_f1": 0.0, "n": 0}
-    em = sum(exact_match(p, r) for p, r in zip(predictions, references)) / n
-    f1 = sum(token_f1(p, r) for p, r in zip(predictions, references)) / n
+    em = (
+        sum(exact_match(p, r) for p, r in zip(predictions, references, strict=False))
+        / n
+    )
+    f1 = sum(token_f1(p, r) for p, r in zip(predictions, references, strict=False)) / n
     return {"exact_match": em, "token_f1": f1, "n": n}
 
 

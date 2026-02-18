@@ -15,7 +15,7 @@ from torch import nn
 
 from harken.registry import Registry
 
-projectors: Registry[type["Projector"]] = Registry("projector")
+projectors: Registry[type[Projector]] = Registry("projector")
 
 
 class Projector(nn.Module, abc.ABC):

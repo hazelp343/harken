@@ -128,5 +128,7 @@ def score_abstention(records: Sequence[dict]) -> dict:
     return {
         "overall_accuracy": overall_correct / len(records) if records else 0.0,
         "accuracy_by_type": accuracy_by_type,
-        "conditional_unanswerable_accuracy": _conditional_unanswerable_accuracy(records),
+        "conditional_unanswerable_accuracy": _conditional_unanswerable_accuracy(
+            records
+        ),
     }

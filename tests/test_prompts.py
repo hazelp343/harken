@@ -1,5 +1,4 @@
 import pytest
-
 from harken.prompts import AUDIO_TOKEN, build_chat, build_prompt, format_options
 
 

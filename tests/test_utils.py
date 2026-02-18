@@ -1,5 +1,4 @@
 import pytest
-
 from harken.exceptions import DependencyError
 from harken.utils import require, seed_everything
 

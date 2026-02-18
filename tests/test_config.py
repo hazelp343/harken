@@ -1,5 +1,4 @@
 import pytest
-
 from harken.config import AudioQAConfig
 from harken.exceptions import ConfigError
 

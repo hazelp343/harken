@@ -1,5 +1,4 @@
 import torch
-
 from harken.config import AudioQAConfig
 from harken.modeling import build_model
 from harken.processor import AudioQAProcessor
@@ -73,7 +72,5 @@ def test_backward_updates_projector():
     labels = inputs["input_ids"].clone()
     out = model(**inputs, labels=labels)
     out.loss.backward()
-    grads = [
-        p.grad for p in model.projector.parameters() if p.grad is not None
-    ]
+    grads = [p.grad for p in model.projector.parameters() if p.grad is not None]
     assert grads

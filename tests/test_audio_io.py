@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from harken.audio_io import load_audio, peak_normalize, resample, to_mono
 from harken.exceptions import AudioLoadError
 

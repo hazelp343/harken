@@ -66,6 +66,21 @@ def cmd_answer(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_evaluate(args: argparse.Namespace) -> int:
+    import json
+
+    from harken.data import load_examples
+    from harken.evaluation import evaluate_dataset
+
+    model, processor = _build_pipeline(args)
+    examples = load_examples(args.dataset)
+    result = evaluate_dataset(
+        model, processor, examples, max_new_tokens=args.max_new_tokens
+    )
+    print(json.dumps(result["metrics"], indent=2))
+    return 0
+
+
 def _add_model_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--encoder", default="dummy", help="registered encoder name")
     parser.add_argument("--projector", default="mlp", help="projector name")
@@ -100,6 +115,16 @@ def build_parser() -> argparse.ArgumentParser:
     answer_parser.add_argument("--max-new-tokens", type=int, default=32)
     _add_model_options(answer_parser)
     answer_parser.set_defaults(func=cmd_answer)
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate", help="evaluate on a JSONL dataset of audio questions"
+    )
+    evaluate_parser.add_argument(
+        "--dataset", required=True, help="path to a JSONL dataset"
+    )
+    evaluate_parser.add_argument("--max-new-tokens", type=int, default=16)
+    _add_model_options(evaluate_parser)
+    evaluate_parser.set_defaults(func=cmd_evaluate)
 
     return parser
 

@@ -2,7 +2,6 @@ import json
 
 import numpy as np
 import pytest
-
 from harken.cli import main
 
 

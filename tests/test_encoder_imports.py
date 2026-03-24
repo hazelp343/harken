@@ -3,7 +3,6 @@ fail with a clear DependencyError only when actually instantiated without it.
 """
 
 import pytest
-
 from harken.encoders import get_encoder, list_encoders
 from harken.exceptions import DependencyError
 

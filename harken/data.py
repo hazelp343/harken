@@ -89,4 +89,3 @@ class Collator:
         if any(a is None for a in audios):
             raise ValueError("a batch must be either all-audio or no-audio")
         return self.processor(prompts, audio=audios)
-

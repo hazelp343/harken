@@ -73,10 +73,14 @@ def power_spectrogram(
     the first frame is centred on sample zero (matching librosa's default).
     """
     signal = np.asarray(signal, dtype=np.float32)
+    n_freqs = n_fft // 2 + 1
+    if signal.size == 0:
+        return np.zeros((n_freqs, 0), dtype=np.float32)
+
     pad = n_fft // 2
     padded = np.pad(signal, pad, mode="reflect" if signal.size > pad else "constant")
 
-    n_frames = 1 + (len(padded) - n_fft) // hop_length
+    n_frames = max(1, 1 + (len(padded) - n_fft) // hop_length)
     window = np.hanning(n_fft + 1)[:-1].astype(np.float32)
 
     frames = np.stack(

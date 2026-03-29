@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-# Placeholder inserted into the prompt text where audio should be attended to.
-AUDIO_TOKEN = "<audio>"
+from harken.constants import AUDIO_TOKEN
 
 __all__ = ["AUDIO_TOKEN", "build_prompt", "format_options", "build_chat"]
 

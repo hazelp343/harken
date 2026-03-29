@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+# Placeholder token marking where projected audio embeddings are spliced into
+# the prompt. The processor expands it into ``num_audio_tokens`` copies.
+AUDIO_TOKEN: str = "<audio>"
+
 # Most pretrained audio encoders (CLAP, AST, BEATs, Whisper) operate at 16 kHz.
 DEFAULT_SAMPLE_RATE: int = 16_000
 

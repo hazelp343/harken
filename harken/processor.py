@@ -55,6 +55,11 @@ class AudioQAProcessor:
     ) -> dict[str, torch.Tensor]:
         single = isinstance(text, str)
         texts: list[str] = [text] if isinstance(text, str) else list(text)
+        if audio is not None and not all(self.audio_token in t for t in texts):
+            raise ValueError(
+                f"audio was supplied but a prompt has no {self.audio_token!r} "
+                "placeholder; add one with harken.templates.build_prompt"
+            )
         encoded = [self._encode(t) for t in texts]
 
         max_len = max(len(e) for e in encoded)

@@ -1,6 +1,6 @@
 import numpy as np
 from harken.processor import AudioQAProcessor
-from harken.prompts import build_prompt
+from harken.templates import build_prompt
 from harken.testing import TinyTokenizer
 
 

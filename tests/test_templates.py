@@ -1,5 +1,6 @@
 import pytest
-from harken.prompts import AUDIO_TOKEN, build_chat, build_prompt, format_options
+
+from harken.templates import AUDIO_TOKEN, build_chat, build_prompt, format_options
 
 
 def test_format_options_letters():

@@ -10,9 +10,8 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from harken.constants import DEFAULT_SAMPLE_RATE
+from harken.constants import AUDIO_TOKEN, DEFAULT_SAMPLE_RATE
 from harken.exceptions import ConfigError
-from harken.prompts import AUDIO_TOKEN
 
 _DEFAULT_SYSTEM_PROMPT = (
     "You are a helpful assistant that answers questions about audio recordings."

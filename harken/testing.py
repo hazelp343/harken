@@ -16,7 +16,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from harken.prompts import AUDIO_TOKEN
+from harken.constants import AUDIO_TOKEN
 
 _SPECIALS = ["<pad>", "<bos>", "<eos>", "<unk>"]
 

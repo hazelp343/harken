@@ -1,8 +1,8 @@
-"""Prompt construction for audio question answering.
+"""Prompt and chat templates for audio question answering.
 
-A single placeholder token marks where the projected audio embeddings are
-spliced into the text stream; the processor later expands it into the right
-number of audio tokens.
+A single placeholder token (:data:`harken.constants.AUDIO_TOKEN`) marks where
+the projected audio embeddings are spliced into the text stream; the processor
+later expands it into the right number of audio tokens.
 """
 
 from __future__ import annotations

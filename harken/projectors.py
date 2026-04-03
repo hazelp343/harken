@@ -34,6 +34,14 @@ class Projector(nn.Module, abc.ABC):
         """Adaptive average pool over the time axis to ``n_tokens`` steps."""
         return F.adaptive_avg_pool1d(x.transpose(1, 2), n_tokens).transpose(1, 2)
 
+    @staticmethod
+    def _init_weights(module: nn.Module) -> None:
+        """Xavier-uniform init for linear layers, zero bias."""
+        if isinstance(module, nn.Linear):
+            nn.init.xavier_uniform_(module.weight)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+
 
 @projectors.register("linear")
 class LinearProjector(Projector):
@@ -42,6 +50,7 @@ class LinearProjector(Projector):
     def __init__(self, in_dim: int, out_dim: int, num_tokens: int = 8) -> None:
         super().__init__(in_dim, out_dim, num_tokens)
         self.proj = nn.Linear(in_dim, out_dim)
+        self.apply(self._init_weights)
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         return self._pool_time(self.proj(frames), self.num_tokens)
@@ -68,6 +77,7 @@ class MLPProjector(Projector):
             nn.GELU(),
             nn.Linear(hidden_dim, out_dim),
         )
+        self.apply(self._init_weights)
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         return self._pool_time(self.net(frames), self.num_tokens)
@@ -95,6 +105,7 @@ class StackProjector(Projector):
             nn.GELU(),
             nn.Linear(out_dim, out_dim),
         )
+        self.apply(self._init_weights)
 
     def _stack(self, frames: torch.Tensor) -> torch.Tensor:
         b, t, d = frames.shape
@@ -138,6 +149,7 @@ class QueryProjector(Projector):
             nn.Linear(out_dim * 4, out_dim),
         )
         self.norm2 = nn.LayerNorm(out_dim)
+        self.apply(self._init_weights)
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         kv = self.in_proj(frames)

@@ -53,7 +53,9 @@ def resample(signal: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
         return signal
 
     if signal.ndim == 2:
-        channels = [resample(signal[:, c], orig_sr, target_sr) for c in range(signal.shape[1])]
+        channels = [
+            resample(signal[:, c], orig_sr, target_sr) for c in range(signal.shape[1])
+        ]
         return np.stack(channels, axis=1)
 
     try:

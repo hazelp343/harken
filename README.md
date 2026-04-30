@@ -1,5 +1,10 @@
 # harken
 
+[![CI](https://github.com/hazelp343/harken/actions/workflows/ci.yml/badge.svg)](https://github.com/hazelp343/harken/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Code style: ruff](https://img.shields.io/badge/style-ruff-261230)](https://github.com/astral-sh/ruff)
+
 **Connect pretrained audio encoders to large language models for audio question
 answering.**
 

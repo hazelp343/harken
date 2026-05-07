@@ -1,0 +1,4 @@
+{"question": "Which animal is making the sound?", "answer": "dog", "options": ["dog", "cat", "cow"], "type": "solvable", "group": 1}
+{"question": "Which musical instrument is playing?", "answer": "", "options": ["piano", "violin", "none of the above"], "type": "unanswerable", "group": 1}
+{"question": "Which animal is making the sound?", "answer": "rooster", "options": ["rooster", "sheep", "pig"], "type": "solvable", "group": 2}
+{"question": "What word is being spoken in the clip?", "answer": "", "type": "unanswerable", "group": 2}

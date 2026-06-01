@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-28
+
+### Added
+- `py.typed` marker so downstream projects pick up harken's type hints.
+- Release workflow (PyPI trusted publishing) and CodeQL analysis.
+
+### Fixed
+- Resample multi-channel audio per channel in `load_audio`.
+- Guard the log-mel front end against empty signals.
+
 ## [0.2.0] - 2026-06-22
 
 ### Added
@@ -30,6 +40,7 @@ Initial release.
 - Pure-numpy log-mel front end, audio I/O and chunking helpers.
 - `harken.testing` with `TinyTokenizer` and `TinyCausalLM`.
 
-[Unreleased]: https://github.com/hazelp343/harken/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/hazelp343/harken/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/hazelp343/harken/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/hazelp343/harken/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/hazelp343/harken/releases/tag/v0.1.0

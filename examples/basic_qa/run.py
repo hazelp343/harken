@@ -6,7 +6,6 @@ so it needs no downloads. The answer is not meaningful (the model is untrained)
 """
 
 import numpy as np
-
 from harken import AudioQAConfig, AudioQAProcessor, build_model
 from harken.testing import TinyTokenizer
 

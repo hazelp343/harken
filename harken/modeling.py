@@ -122,3 +122,44 @@ class AudioQAModel(nn.Module):
         inputs = processor(prompt, audio=audio)
         generated = self.generate(**inputs, max_new_tokens=max_new_tokens)
         return processor.tokenizer.decode(generated[0].tolist())
+
+
+def build_model(
+    config: AudioQAConfig,
+    audio_token_id: int,
+    language_model: nn.Module | None = None,
+    freeze_encoder: bool = True,
+) -> AudioQAModel:
+    """Assemble an :class:`AudioQAModel` from a config.
+
+    When ``language_model`` is omitted a small built-in causal LM is used, which
+    is handy for tests and examples that should not download anything.
+    """
+    from harken.encoders import get_encoder
+    from harken.projectors import build_projector
+
+    encoder = get_encoder(
+        config.encoder_name, output_dim=config.encoder_dim, **config.encoder_kwargs
+    )
+
+    proj_kwargs = dict(config.projector_kwargs)
+    if config.projector == "stack":
+        proj_kwargs.setdefault("stack_factor", config.stack_factor)
+    if config.projector == "mlp" and config.projector_hidden_dim:
+        proj_kwargs.setdefault("hidden_dim", config.projector_hidden_dim)
+    projector = build_projector(
+        config.projector,
+        config.encoder_dim,
+        config.llm_dim,
+        config.num_audio_tokens,
+        **proj_kwargs,
+    )
+
+    if language_model is None:
+        from harken.testing import TinyCausalLM, TinyCausalLMConfig
+
+        language_model = TinyCausalLM(TinyCausalLMConfig(hidden_size=config.llm_dim))
+
+    return AudioQAModel(
+        encoder, projector, language_model, config, audio_token_id, freeze_encoder
+    )

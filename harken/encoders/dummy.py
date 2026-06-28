@@ -17,6 +17,9 @@ from harken.encoders.base import AudioEncoder
 
 @register_encoder("dummy")
 class DummyAudioEncoder(AudioEncoder):
+    _proj: torch.Tensor
+    _frame_bias: torch.Tensor
+
     def __init__(
         self,
         output_dim: int = 512,

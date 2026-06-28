@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from harken.audio_io import load_audio
-from harken.prompts import build_prompt
+from harken.templates import build_prompt
 
 _FIELDS = {"question", "answer", "audio", "options", "type", "group", "id"}
 

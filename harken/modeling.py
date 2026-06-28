@@ -120,7 +120,7 @@ class AudioQAModel(nn.Module):
         max_new_tokens: int = 32,
     ) -> str:
         """High-level convenience: build a prompt, run the audio, decode text."""
-        from harken.prompts import build_prompt
+        from harken.templates import build_prompt
 
         prompt = build_prompt(question, options, audio_token=self.config.audio_token)
         inputs = processor(prompt, audio=audio)

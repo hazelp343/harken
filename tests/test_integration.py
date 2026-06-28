@@ -5,7 +5,7 @@ from harken.data import AudioQAExample
 from harken.evaluation import evaluate_dataset
 from harken.modeling import build_model
 from harken.processor import AudioQAProcessor
-from harken.prompts import build_prompt
+from harken.templates import build_prompt
 from harken.testing import TinyTokenizer
 
 

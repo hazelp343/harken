@@ -8,6 +8,8 @@ model.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import numpy as np
 import torch
 
@@ -37,15 +39,31 @@ class AudioQAProcessor:
 
     def __call__(
         self,
-        text: str,
-        audio: np.ndarray | None = None,
+        text: str | Sequence[str],
+        audio: np.ndarray | Sequence[np.ndarray] | None = None,
     ) -> dict[str, torch.Tensor]:
-        ids = self._encode(text)
+        single = isinstance(text, str)
+        texts = [text] if single else list(text)
+        encoded = [self._encode(t) for t in texts]
+
+        max_len = max(len(e) for e in encoded)
+        pad_id = int(getattr(self.tokenizer, "pad_token_id", 0))
+        input_ids = torch.full((len(encoded), max_len), pad_id, dtype=torch.long)
+        attention_mask = torch.zeros((len(encoded), max_len), dtype=torch.long)
+        for i, e in enumerate(encoded):
+            input_ids[i, : len(e)] = torch.tensor(e, dtype=torch.long)
+            attention_mask[i, : len(e)] = 1
+
         out: dict[str, torch.Tensor] = {
-            "input_ids": torch.tensor([ids], dtype=torch.long),
-            "attention_mask": torch.ones(1, len(ids), dtype=torch.long),
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
         }
         if audio is not None:
-            wav = torch.as_tensor(np.asarray(audio, dtype=np.float32))
-            out["audio_values"] = wav.unsqueeze(0)
+            audios = [audio] if single else list(audio)
+            wavs = [torch.as_tensor(np.asarray(a, dtype=np.float32)) for a in audios]
+            max_samples = max(w.shape[0] for w in wavs)
+            batch = torch.zeros(len(wavs), max_samples, dtype=torch.float32)
+            for i, w in enumerate(wavs):
+                batch[i, : w.shape[0]] = w
+            out["audio_values"] = batch
         return out

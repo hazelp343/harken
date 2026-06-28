@@ -145,3 +145,36 @@ class QueryProjector(Projector):
         attended, _ = self.attn(q, kv, kv)
         x = self.norm1(q + attended)
         return self.norm2(x + self.ffn(x))
+
+
+def list_projectors() -> list[str]:
+    """Names of all registered projectors."""
+    return projectors.keys()
+
+
+def build_projector(
+    name: str,
+    in_dim: int,
+    out_dim: int,
+    num_tokens: int = 8,
+    **kwargs: object,
+) -> Projector:
+    """Construct a projector by name.
+
+    Extra keyword arguments (e.g. ``stack_factor``, ``hidden_dim``) are passed
+    through to the chosen projector.
+    """
+    cls = projectors.get(name)
+    return cls(in_dim, out_dim, num_tokens, **kwargs)  # type: ignore[arg-type]
+
+
+__all__ = [
+    "Projector",
+    "LinearProjector",
+    "MLPProjector",
+    "StackProjector",
+    "QueryProjector",
+    "projectors",
+    "list_projectors",
+    "build_projector",
+]

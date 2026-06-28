@@ -41,15 +41,20 @@ def peak_normalize(signal: np.ndarray, peak: float = 1.0) -> np.ndarray:
 
 
 def resample(signal: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
-    """Resample a mono signal from ``orig_sr`` to ``target_sr``.
+    """Resample a signal from ``orig_sr`` to ``target_sr``.
 
-    Uses ``resampy`` when it is installed (band-limited, high quality) and
-    falls back to linear interpolation otherwise so the core stays usable with
-    no extra dependencies.
+    Handles mono ``(samples,)`` and multi-channel ``(samples, channels)`` input
+    (resampled per channel). Uses ``resampy`` when installed (band-limited, high
+    quality) and falls back to linear interpolation otherwise so the core stays
+    usable with no extra dependencies.
     """
     signal = np.asarray(signal, dtype=np.float32)
     if orig_sr == target_sr or signal.size == 0:
         return signal
+
+    if signal.ndim == 2:
+        channels = [resample(signal[:, c], orig_sr, target_sr) for c in range(signal.shape[1])]
+        return np.stack(channels, axis=1)
 
     try:
         import resampy

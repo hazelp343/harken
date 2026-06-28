@@ -94,9 +94,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="harken",
         description="Audio question answering: pretrained audio encoders + LLMs.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"harken {__version__}"
-    )
+    parser.add_argument("--version", action="version", version=f"harken {__version__}")
     subparsers = parser.add_subparsers(dest="command")
 
     info_parser = subparsers.add_parser(

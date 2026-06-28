@@ -1,5 +1,4 @@
 import numpy as np
-
 from harken.data import AudioQAExample, Collator, load_examples, save_examples
 
 
@@ -57,7 +56,6 @@ def test_collator_with_audio_arrays():
 
 def test_collator_mixed_audio_raises():
     import pytest
-
     from harken.processor import AudioQAProcessor
     from harken.testing import TinyTokenizer
 

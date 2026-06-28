@@ -9,6 +9,7 @@ from __future__ import annotations
 import numpy as np
 
 from harken.constants import DEFAULT_SAMPLE_RATE
+from harken.exceptions import AudioLoadError
 
 __all__ = ["load_audio", "to_mono", "peak_normalize", "resample"]
 
@@ -71,6 +72,29 @@ def load_audio(
 ) -> np.ndarray:
     """Load an audio file as a 1-D (or 2-D) float32 array at ``sr`` Hz.
 
-    Implementation lands in a later change.
+    Parameters
+    ----------
+    path:
+        Path to any libsndfile-readable file (WAV, FLAC, OGG, ...).
+    sr:
+        Target sample rate. The file is resampled if it differs.
+    mono:
+        Downmix to a single channel when ``True``.
     """
-    raise NotImplementedError
+    try:
+        import soundfile as sf
+    except ImportError as exc:  # pragma: no cover
+        raise AudioLoadError(
+            "soundfile is required to read audio files"
+        ) from exc
+
+    try:
+        signal, file_sr = sf.read(path, dtype="float32", always_2d=False)
+    except (RuntimeError, OSError) as exc:
+        raise AudioLoadError(f"could not read audio file: {path}") from exc
+
+    if mono:
+        signal = to_mono(signal)
+    if file_sr != sr:
+        signal = resample(signal, file_sr, sr)
+    return np.ascontiguousarray(signal, dtype=np.float32)

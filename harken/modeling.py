@@ -61,9 +61,13 @@ class AudioQAModel(nn.Module):
         is_audio = input_ids == self.audio_token_id
         for i in range(input_ids.shape[0]):
             positions = is_audio[i].nonzero(as_tuple=True)[0]
-            k = min(positions.numel(), n_audio)
-            if k:
-                merged[i, positions[:k]] = audio_embeds[i, :k].to(merged.dtype)
+            if positions.numel() != n_audio:
+                raise ValueError(
+                    f"row {i} has {positions.numel()} audio tokens but the "
+                    f"projector produced {n_audio} embeddings; check that the "
+                    "processor's num_audio_tokens matches the model"
+                )
+            merged[i, positions] = audio_embeds[i].to(merged.dtype)
         return merged
 
     def _prepare_inputs_embeds(

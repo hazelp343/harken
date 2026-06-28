@@ -10,6 +10,11 @@ from __future__ import annotations
 
 import zlib
 from collections.abc import Sequence
+from dataclasses import dataclass
+
+import torch
+import torch.nn.functional as F
+from torch import nn
 
 from harken.prompts import AUDIO_TOKEN
 
@@ -59,3 +64,82 @@ class TinyTokenizer:
             else:
                 out.append(f"w{i}")
         return " ".join(out)
+
+
+@dataclass
+class TinyCausalLMConfig:
+    vocab_size: int = 256
+    hidden_size: int = 64
+
+
+@dataclass
+class CausalLMOutput:
+    """Minimal stand-in for a Hugging Face causal-LM output."""
+
+    logits: torch.Tensor
+    loss: torch.Tensor | None = None
+
+
+class TinyCausalLM(nn.Module):
+    """A tiny GRU-based causal LM exposing the bits harken relies on."""
+
+    def __init__(self, config: TinyCausalLMConfig | None = None) -> None:
+        super().__init__()
+        self.config = config or TinyCausalLMConfig()
+        h = self.config.hidden_size
+        self.embed = nn.Embedding(self.config.vocab_size, h)
+        self.rnn = nn.GRU(h, h, batch_first=True)
+        self.lm_head = nn.Linear(h, self.config.vocab_size)
+
+    def get_input_embeddings(self) -> nn.Embedding:
+        return self.embed
+
+    def _backbone(self, inputs_embeds: torch.Tensor) -> torch.Tensor:
+        out, _ = self.rnn(inputs_embeds)
+        return out
+
+    def forward(
+        self,
+        input_ids: torch.Tensor | None = None,
+        inputs_embeds: torch.Tensor | None = None,
+        attention_mask: torch.Tensor | None = None,
+        labels: torch.Tensor | None = None,
+    ) -> CausalLMOutput:
+        if inputs_embeds is None:
+            if input_ids is None:
+                raise ValueError("provide input_ids or inputs_embeds")
+            inputs_embeds = self.embed(input_ids)
+        logits = self.lm_head(self._backbone(inputs_embeds))
+        loss = None
+        if labels is not None:
+            loss = F.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                labels.view(-1),
+                ignore_index=-100,
+            )
+        return CausalLMOutput(logits=logits, loss=loss)
+
+    @torch.no_grad()
+    def generate(
+        self,
+        input_ids: torch.Tensor | None = None,
+        inputs_embeds: torch.Tensor | None = None,
+        attention_mask: torch.Tensor | None = None,
+        max_new_tokens: int = 8,
+        eos_token_id: int | None = None,
+        **_: object,
+    ) -> torch.Tensor:
+        """Greedy decode, returning only the newly generated token ids."""
+        if inputs_embeds is None:
+            if input_ids is None:
+                raise ValueError("provide input_ids or inputs_embeds")
+            inputs_embeds = self.embed(input_ids)
+
+        cur = inputs_embeds
+        generated: list[torch.Tensor] = []
+        for _step in range(max_new_tokens):
+            logits = self.lm_head(self._backbone(cur))[:, -1, :]
+            nxt = logits.argmax(dim=-1)
+            generated.append(nxt)
+            cur = torch.cat([cur, self.embed(nxt).unsqueeze(1)], dim=1)
+        return torch.stack(generated, dim=1)

@@ -84,9 +84,7 @@ def load_audio(
     try:
         import soundfile as sf
     except ImportError as exc:  # pragma: no cover
-        raise AudioLoadError(
-            "soundfile is required to read audio files"
-        ) from exc
+        raise AudioLoadError("soundfile is required to read audio files") from exc
 
     try:
         signal, file_sr = sf.read(path, dtype="float32", always_2d=False)

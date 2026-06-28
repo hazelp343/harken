@@ -36,7 +36,6 @@ from harken.encoders import clap as _clap  # noqa: E402,F401
 from harken.encoders import dummy as _dummy  # noqa: E402,F401
 from harken.encoders import whisper as _whisper  # noqa: E402,F401
 
-
 __all__ = [
     "AudioEncoder",
     "audio_encoders",

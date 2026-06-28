@@ -1,6 +1,5 @@
 import pytest
 import torch
-
 from harken.projectors import build_projector, list_projectors
 
 ALL = ["linear", "mlp", "stack", "query"]

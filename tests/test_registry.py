@@ -1,5 +1,4 @@
 import pytest
-
 from harken.exceptions import RegistryError
 from harken.registry import Registry
 

@@ -1,5 +1,4 @@
 import torch
-
 from harken.encoders import get_encoder, list_encoders
 from harken.encoders.dummy import DummyAudioEncoder
 

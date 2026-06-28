@@ -1,5 +1,4 @@
 import numpy as np
-
 from harken.features import (
     hz_to_mel,
     log_mel_spectrogram,

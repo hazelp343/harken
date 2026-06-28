@@ -34,9 +34,7 @@ class Registry(Generic[T]):
 
         def _add(value: T) -> T:
             if key in self._items:
-                raise RegistryError(
-                    f"{self.name} '{key}' is already registered"
-                )
+                raise RegistryError(f"{self.name} '{key}' is already registered")
             self._items[key] = value
             return value
 

@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from harken.chunking import frame_signal, num_frames
 
 

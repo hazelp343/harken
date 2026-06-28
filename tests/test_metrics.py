@@ -1,5 +1,4 @@
 import pytest
-
 from harken.evaluation import (
     aggregate,
     exact_match,
@@ -50,7 +49,12 @@ def test_is_abstention(text, expected):
 def test_score_abstention_conditional():
     records = [
         {"prediction": "dog", "answer": "dog", "type": "solvable", "group": 1},
-        {"prediction": "none of the above", "answer": "", "type": "unanswerable", "group": 1},
+        {
+            "prediction": "none of the above",
+            "answer": "",
+            "type": "unanswerable",
+            "group": 1,
+        },
         {"prediction": "cat", "answer": "dog", "type": "solvable", "group": 2},
         {"prediction": "it is a cat", "answer": "", "type": "unanswerable", "group": 2},
     ]

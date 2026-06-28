@@ -88,3 +88,37 @@ class AudioQAModel(nn.Module):
             attention_mask=attention_mask,
             labels=labels,
         )
+
+    @torch.no_grad()
+    def generate(
+        self,
+        input_ids: torch.Tensor,
+        audio_values: torch.Tensor | None = None,
+        attention_mask: torch.Tensor | None = None,
+        max_new_tokens: int = 32,
+        **kwargs: object,
+    ) -> torch.Tensor:
+        """Generate token ids conditioned on the (audio-augmented) prompt."""
+        inputs_embeds = self._prepare_inputs_embeds(input_ids, audio_values)
+        return self.language_model.generate(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
+            **kwargs,
+        )
+
+    def answer(
+        self,
+        processor,
+        question: str,
+        audio,
+        options=None,
+        max_new_tokens: int = 32,
+    ) -> str:
+        """High-level convenience: build a prompt, run the audio, decode text."""
+        from harken.prompts import build_prompt
+
+        prompt = build_prompt(question, options, audio_token=self.config.audio_token)
+        inputs = processor(prompt, audio=audio)
+        generated = self.generate(**inputs, max_new_tokens=max_new_tokens)
+        return processor.tokenizer.decode(generated[0].tolist())

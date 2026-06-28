@@ -38,3 +38,13 @@ def test_log_mel_silence_is_floored():
     feats = log_mel_spectrogram(np.zeros(16000, dtype=np.float32))
     assert np.all(np.isfinite(feats))
     assert feats.max() <= np.log(1e-10) + 1e-3
+
+
+def test_power_spectrogram_empty_signal():
+    spec = power_spectrogram(np.zeros(0, dtype=np.float32), n_fft=400)
+    assert spec.shape == (201, 0)
+
+
+def test_log_mel_empty_signal():
+    feats = log_mel_spectrogram(np.zeros(0, dtype=np.float32), n_mels=64)
+    assert feats.shape == (64, 0)

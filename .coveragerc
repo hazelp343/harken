@@ -1,8 +1,0 @@
-# Mirrors [tool.coverage] in pyproject.toml for tools that only read .coveragerc.
-[run]
-source = harken
-branch = True
-omit = harken/cli.py
-
-[report]
-show_missing = True

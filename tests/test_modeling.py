@@ -51,3 +51,29 @@ def test_encoder_is_frozen_by_default():
     assert all(not p.requires_grad for p in model.encoder.parameters())
     # projector stays trainable.
     assert any(p.requires_grad for p in model.projector.parameters())
+
+
+def test_generate_returns_new_tokens():
+    model, proc, _ = make_setup()
+    inputs = proc(build_prompt("what is this?"), audio=torch.zeros(16000).numpy())
+    out = model.generate(**inputs, max_new_tokens=5)
+    assert out.shape == (1, 5)
+    assert out.dtype == torch.long
+
+
+def test_answer_returns_string():
+    model, proc, _ = make_setup()
+    text = model.answer(proc, "what do you hear?", torch.zeros(8000).numpy())
+    assert isinstance(text, str)
+
+
+def test_backward_updates_projector():
+    model, proc, _ = make_setup()
+    inputs = proc(build_prompt("q?"), audio=torch.zeros(8000).numpy())
+    labels = inputs["input_ids"].clone()
+    out = model(**inputs, labels=labels)
+    out.loss.backward()
+    grads = [
+        p.grad for p in model.projector.parameters() if p.grad is not None
+    ]
+    assert grads

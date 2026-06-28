@@ -7,11 +7,14 @@ An :class:`AudioQAExample` is a lightweight record; ``audio`` is usually a path
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+
+from harken.audio_io import load_audio
+from harken.prompts import build_prompt
 
 _FIELDS = {"question", "answer", "audio", "options", "type", "group", "id"}
 
@@ -58,3 +61,32 @@ def save_examples(examples: Iterable[AudioQAExample], path: str | Path) -> None:
     with open(path, "w", encoding="utf-8") as handle:
         for example in examples:
             handle.write(json.dumps(example.to_dict()) + "\n")
+
+
+class Collator:
+    """Turn a list of examples into batched processor inputs.
+
+    Audio is resolved per example (loading file paths and passing arrays
+    through). A batch must be all-audio or no-audio so the tensors stack.
+    """
+
+    def __init__(self, processor, audio_loader=None) -> None:
+        self.processor = processor
+        self.audio_loader = audio_loader or load_audio
+
+    def _resolve_audio(self, example: AudioQAExample) -> np.ndarray | None:
+        if example.audio is None:
+            return None
+        if isinstance(example.audio, str):
+            return self.audio_loader(example.audio, sr=self.processor.sample_rate)
+        return np.asarray(example.audio, dtype=np.float32)
+
+    def __call__(self, examples: Sequence[AudioQAExample]) -> dict:
+        prompts = [build_prompt(e.question, e.options) for e in examples]
+        audios = [self._resolve_audio(e) for e in examples]
+        if all(a is None for a in audios):
+            return self.processor(prompts)
+        if any(a is None for a in audios):
+            raise ValueError("a batch must be either all-audio or no-audio")
+        return self.processor(prompts, audio=audios)
+

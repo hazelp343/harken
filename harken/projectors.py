@@ -45,3 +45,29 @@ class LinearProjector(Projector):
 
     def forward(self, frames: torch.Tensor) -> torch.Tensor:
         return self._pool_time(self.proj(frames), self.num_tokens)
+
+
+@projectors.register("mlp")
+class MLPProjector(Projector):
+    """Two-layer GELU MLP per frame, pooled to a fixed token count.
+
+    This is the default and matches the LLaVA-style projector most closely.
+    """
+
+    def __init__(
+        self,
+        in_dim: int,
+        out_dim: int,
+        num_tokens: int = 8,
+        hidden_dim: int | None = None,
+    ) -> None:
+        super().__init__(in_dim, out_dim, num_tokens)
+        hidden_dim = hidden_dim or out_dim
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, out_dim),
+        )
+
+    def forward(self, frames: torch.Tensor) -> torch.Tensor:
+        return self._pool_time(self.net(frames), self.num_tokens)

@@ -14,7 +14,7 @@ from typing import Protocol
 import numpy as np
 import torch
 
-from harken.prompts import AUDIO_TOKEN
+from harken.constants import AUDIO_TOKEN
 
 
 class TokenizerLike(Protocol):
